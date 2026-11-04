@@ -5,3 +5,13 @@ spring:
     url: jdbc:h2:mem:smartprod;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
     username: sa
     password:
+
+app:
+  jwt:
+    # Segredo SÓ para desenvolvimento e testes (HS256 exige no mínimo 32 bytes). Nunca use em produção.
+    secret: ${JWT_SECRET:dev-somente-segredo-jwt-nunca-usar-em-producao-0123456789}
+  seed:
+    gerente:
+      # Conta de exemplo apenas no perfil dev (banco em memória, recriado a cada execução).
+      email: ${SEED_GERENTE_EMAIL:gerente@smartprod.dev}
+      senha: ${SEED_GERENTE_SENHA:Gerente@123}

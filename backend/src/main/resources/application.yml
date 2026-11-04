@@ -29,3 +29,15 @@ app:
   cors:
     # Origens do frontend, separadas por vírgula.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5500,http://127.0.0.1:5500,http://localhost:3000,http://localhost:5173}
+  jwt:
+    # Validade do token de acesso, em minutos (padrão: 8 horas, um turno de trabalho).
+    validade-minutos: ${JWT_VALIDADE_MINUTOS:480}
+    # O segredo (app.jwt.secret) fica em application-dev.yml (valor só para desenvolvimento)
+    # e em application-prod.yml (variável JWT_SECRET, sem valor padrão).
+  seed:
+    gerente:
+      # Primeiro Gerente (RF001). Só é criado se e-mail e senha vierem preenchidos.
+      # O perfil dev traz valores de exemplo; em produção use as variáveis de ambiente.
+      nome: ${SEED_GERENTE_NOME:Gerente}
+      email: ${SEED_GERENTE_EMAIL:}
+      senha: ${SEED_GERENTE_SENHA:}

@@ -5,6 +5,11 @@ spring:
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+app:
+  jwt:
+    # Sem valor padrão de propósito: sem JWT_SECRET (mínimo 32 caracteres) a aplicação não deve subir.
+    secret: ${JWT_SECRET}
+
 springdoc:
   api-docs:
     enabled: false
