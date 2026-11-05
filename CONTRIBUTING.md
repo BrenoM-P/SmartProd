@@ -2,7 +2,7 @@
 
 O repositório oficial é `Igorzon1/SmartProd`. O Igor revisa e junta os Pull Requests e faz a entrega da A3. **Ninguém faz push direto nele**: cada pessoa trabalha no seu *fork* e abre um PR.
 
-As tarefas ficam no **Jira** (chave `SMART`). Antes de começar, leia [docs/09-divisao-de-tarefas.md](docs/09-divisao-de-tarefas.md) e o arquivo da sua dupla em [docs/tarefas/](docs/tarefas/).
+As tarefas ficam no **Jira** (chave `KAN`). Antes de começar, leia [docs/09-divisao-de-tarefas.md](docs/09-divisao-de-tarefas.md) e o arquivo da sua dupla em [docs/tarefas/](docs/tarefas/).
 
 ## 1. Preparar o ambiente (uma vez)
 
@@ -30,13 +30,13 @@ git push origin main
 **b) Crie a branch com a chave do Jira:**
 
 ```bash
-git switch -c SMART-12-login-backend
+git switch -c KAN-5-login-backend
 ```
 
 **c) Trabalhe só nos arquivos da sua dupla** (veja a tabela de donos em [docs/09](docs/09-divisao-de-tarefas.md)). Commits pequenos e descritivos, com a chave no começo:
 
 ```bash
-git commit -m "SMART-12 feat: login com token JWT"
+git commit -m "KAN-5 feat: login com token JWT"
 ```
 
 **d) Teste antes de abrir o PR:**
@@ -50,10 +50,10 @@ No frontend, sirva a pasta (`npx serve -l 5500 frontend`) e confira a tela no na
 **e) Envie para o seu fork e abra o PR:**
 
 ```bash
-git push -u origin SMART-12-login-backend
+git push -u origin KAN-5-login-backend
 ```
 
-No GitHub, abra o Pull Request **do seu fork para `Igorzon1/SmartProd`, branch `main`**, com o título `SMART-12 login com token` e o template preenchido.
+No GitHub, abra o Pull Request **do seu fork para `Igorzon1/SmartProd`, branch `main`**, com o título `KAN-5 login com token` e o template preenchido.
 
 **f) Revisão.** O Igor comenta no PR. Para ajustar, faça novos commits na mesma branch e dê `git push` de novo; o PR atualiza sozinho. Depois do merge, apague a branch e repita o passo (a).
 

@@ -19,6 +19,6 @@ O arquivo [tarefas-jira.csv](tarefas-jira.csv) tem as **27 tarefas** das 3 dupla
 3. Mapeie as colunas pelos nomes iguais. As 3 colunas `Labels` mapeiam para o campo Labels.
 4. Confira a prévia (acentos e quebras de linha na descrição) e importe.
 
-Depois de importar, o Jira dá a chave real a cada card (`SMART-1`, `SMART-2`…). Se a chave do projeto não for `SMART`, troque nos exemplos de [CONTRIBUTING.md](../../CONTRIBUTING.md) e do `CLAUDE.md`.
+Depois de importar, o Jira dá a chave real a cada card (`KAN-1`, `KAN-2`…). Se a chave do projeto não for `KAN`, troque nos exemplos de [CONTRIBUTING.md](../../CONTRIBUTING.md) e do `CLAUDE.md`.
 
 Sugestão: crie um **Epic por dupla** (ou um filtro pelo label `dupla-N`) e atribua cada card ao responsável. O código `[D1-BE-01]` no título deixa as dependências citadas nos arquivos de tarefas fáceis de achar.

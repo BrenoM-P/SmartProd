@@ -48,7 +48,7 @@ Tudo está em [docs/](docs/README.md): visão e escopo, requisitos (RF001–RF01
 
 ## Como contribuir
 
-O trabalho é dividido em **3 duplas (1 backend + 1 frontend cada)**, cada uma dona de pastas específicas: veja [docs/09-divisao-de-tarefas.md](docs/09-divisao-de-tarefas.md) e as tarefas em [docs/tarefas/](docs/tarefas/). Cada pessoa faz **fork** e abre **Pull Request**; as tarefas ficam no Jira (chave `SMART`). Passo a passo em [CONTRIBUTING.md](CONTRIBUTING.md).
+O trabalho é dividido em **3 duplas (1 backend + 1 frontend cada)**, cada uma dona de pastas específicas: veja [docs/09-divisao-de-tarefas.md](docs/09-divisao-de-tarefas.md) e as tarefas em [docs/tarefas/](docs/tarefas/). Cada pessoa faz **fork** e abre **Pull Request**; as tarefas ficam no Jira (chave `KAN`). Passo a passo em [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
