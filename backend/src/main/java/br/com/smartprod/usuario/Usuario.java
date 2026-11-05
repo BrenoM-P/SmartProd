@@ -44,9 +44,14 @@ public class Usuario {
 
     public Usuario(String nome, String email, String senhaHash, Perfil perfil) {
         this.nome = nome;
-        this.email = email.trim().toLowerCase(Locale.ROOT);
+        this.email = normalizarEmail(email);
         this.senhaHash = senhaHash;
         this.perfil = perfil;
+    }
+
+    /** O e-mail é sempre gravado e consultado sem espaços nas pontas e em minúsculas. */
+    public static String normalizarEmail(String email) {
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
     public Long getId() {
