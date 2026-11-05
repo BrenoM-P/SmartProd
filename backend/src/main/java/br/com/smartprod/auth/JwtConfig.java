@@ -14,8 +14,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
@@ -43,18 +41,6 @@ public class JwtConfig {
                 .build();
         decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(TokenService.EMISSOR));
         return decoder;
-    }
-
-    /** O claim {@code perfil} do token vira a autoridade {@code ROLE_GERENTE} ou {@code ROLE_FUNCIONARIO}. */
-    @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter autoridades = new JwtGrantedAuthoritiesConverter();
-        autoridades.setAuthoritiesClaimName(TokenService.CLAIM_PERFIL);
-        autoridades.setAuthorityPrefix("ROLE_");
-
-        JwtAuthenticationConverter conversor = new JwtAuthenticationConverter();
-        conversor.setJwtGrantedAuthoritiesConverter(autoridades);
-        return conversor;
     }
 
     /** Chave de assinatura. Falha na subida da aplicação se o segredo estiver ausente ou fraco demais. */

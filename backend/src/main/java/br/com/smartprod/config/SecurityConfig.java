@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
@@ -23,6 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import br.com.smartprod.auth.UsuarioJwtConverter;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -30,8 +30,9 @@ import jakarta.servlet.http.HttpServletRequest;
  *
  * <p>O login ({@code POST /api/auth/login}) e a documentação da API são públicos. Todo o resto exige
  * um token válido no cabeçalho {@code Authorization: Bearer <token>}: sem token, ou com token inválido,
- * vencido ou de outro emissor, a resposta é 401. O claim {@code perfil} do token vira a autoridade
- * {@code ROLE_GERENTE} ou {@code ROLE_FUNCIONARIO} (ver {@code JwtConfig}).
+ * vencido, de outro emissor ou de um usuário inexistente ou inativo, a resposta é 401. O perfil é lido
+ * do banco a cada requisição e vira a autoridade {@code ROLE_GERENTE} ou {@code ROLE_FUNCIONARIO}
+ * (ver {@code UsuarioJwtConverter}), então inativar um usuário ou mudar o perfil vale na hora.
  *
  * <p><b>Como proteger um endpoint (todas as duplas):</b> este arquivo não precisa mudar. Anote o método
  * do controller; com token válido mas perfil sem permissão, a resposta é 403:
@@ -55,7 +56,7 @@ public class SecurityConfig {
     private static final BearerTokenResolver RESOLVEDOR_PADRAO = new DefaultBearerTokenResolver();
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationConverter conversorDeJwt)
+    SecurityFilterChain securityFilterChain(HttpSecurity http, UsuarioJwtConverter conversorDeJwt)
             throws Exception {
         http
                 .cors(Customizer.withDefaults())

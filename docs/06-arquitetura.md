@@ -63,7 +63,7 @@ Dentro de cada pacote: `XController` (REST) → `XService` (regras) → `XReposi
 
 ## 5. Segurança
 
-- **Autenticação (RF001):** token JWT (HS256) no header `Authorization: Bearer …`, pois frontend e backend ficam em domínios diferentes (evita problemas de cookie entre sites). Decidido em 2026-11-04 (Q3). O login é `POST /api/auth/login`; o token leva só o id (`sub`) e o `perfil`, e vale 8 h por padrão (`JWT_VALIDADE_MINUTOS`). O segredo vem de `JWT_SECRET` (mínimo 32 caracteres, sem valor padrão em produção).
+- **Autenticação (RF001):** token JWT (HS256) no header `Authorization: Bearer …`, pois frontend e backend ficam em domínios diferentes (evita problemas de cookie entre sites). Decidido em 2026-11-04 (Q3). O login é `POST /api/auth/login`; o token identifica o usuário (`sub` = id) e vale 8 h por padrão (`JWT_VALIDADE_MINUTOS`). O usuário e o perfil são conferidos no banco a cada requisição, então inativar um usuário ou mudar o perfil dele vale na hora, sem esperar o token expirar. O segredo vem de `JWT_SECRET` (mínimo 32 caracteres, sem valor padrão em produção).
 - **Autorização (RNF-S002):** `GERENTE` e `FUNCIONARIO`. Custos de insumos, perdas em R$ e dashboard só para `GERENTE`, com `@PreAuthorize`. DTOs voltados ao Funcionário **não** incluem campos de custo.
 - **Como proteger um endpoint:** sem mexer no `SecurityConfig`, anote o método do controller com `@PreAuthorize("hasRole('GERENTE')")` (só Gerente) ou `@PreAuthorize("hasAnyRole('GERENTE', 'FUNCIONARIO')")` (qualquer usuário logado). Sem token válido a resposta é `401`; com token de perfil sem permissão, `403`. Método sem anotação exige apenas estar logado. Nos testes com MockMvc use `@WithMockUser(roles = "GERENTE")`.
 - **Senhas (RNF-S001):** BCrypt com força 12.

@@ -82,6 +82,18 @@ public class Usuario {
         return criadoEm;
     }
 
+    /** RF002: edição dos dados cadastrais. O e-mail é normalizado como no cadastro. */
+    public void atualizar(String nome, String email, Perfil perfil) {
+        this.nome = nome;
+        this.email = normalizarEmail(email);
+        this.perfil = perfil;
+    }
+
+    /** Recebe o hash BCrypt já calculado; a senha em texto nunca chega à entidade. */
+    public void alterarSenhaHash(String senhaHash) {
+        this.senhaHash = senhaHash;
+    }
+
     /** RF002: usuários são inativados, nunca removidos. */
     public void inativar() {
         this.ativo = false;
