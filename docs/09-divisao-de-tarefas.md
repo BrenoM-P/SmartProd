@@ -49,7 +49,7 @@ POST /api/auth/login
 → 401 se e-mail/senha inválidos ou usuário inativo
 ```
 
-Demais chamadas levam `Authorization: Bearer <token>`. Perfis viram `ROLE_GERENTE` e `ROLE_FUNCIONARIO`; use `@PreAuthorize("hasRole('GERENTE')")`. Sem token → 401; perfil sem permissão → 403. *(JWT é a proposta da questão Q3.)*
+Demais chamadas levam `Authorization: Bearer <token>`. Perfis viram `ROLE_GERENTE` e `ROLE_FUNCIONARIO`; use `@PreAuthorize("hasRole('GERENTE')")`. Sem token → 401; perfil sem permissão → 403. *(JWT decidido em 2026-11-04; ver Q3 em [08](08-questoes-em-aberto.md).)*
 
 ### Insumos (dupla 1 → dupla 2)
 

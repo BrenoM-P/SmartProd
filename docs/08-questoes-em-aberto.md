@@ -8,7 +8,6 @@ Inconsistências encontradas nos documentos e decisões ainda não tomadas. **IA
 |---|---|---|---|
 | Q1 | Perfis: a Visão fala em 2 perfis (Gerente/Funcionário), os stakeholders têm 3 papéis (Gerente, Padeiro, Ajudante) e o mockup de login tem "Gerente/Padeiro" | Visão §4, Requisitos §2.2, Pré-Projeto | Manter 2 perfis de acesso; Padeiro e Ajudante são `FUNCIONARIO` |
 | Q2 | RF007 recalcula "por estoque", mas não há requisito de cadastro/controle de estoque | RF007, Visão F3 | Gerente/padeiro **informa o estoque disponível na própria calculadora**; sem entidade de estoque nesta versão |
-| Q3 | Método de autenticação | RF001 | JWT stateless (frontend e backend em domínios diferentes) |
 | Q4 | Disponibilidade 99,5% (RNF-C001) é incompatível com *free tier* que "dorme" | RNF-C001, restrição de orçamento | Tratar como meta de projeto; documentar a limitação na entrega |
 | Q5 | Estados da OP (3: pendente, em andamento, concluída) × colunas do Kanban por etapa (pesagem, mistura, fermentação, forno…) × nome da coluna inicial ("Pendente" vs "A Fazer") | RF009, Canvas, Pré-Projeto | OP tem 3 estados; Kanban v1 usa as 3 colunas. Etapas viram o campo `etapaAtual` (evolução) |
 | Q6 | Mockup de login mostra Google/Facebook, mas o escopo é só e-mail e senha | Pré-Projeto §7, Visão F1 | Fora do escopo; ajustar o mockup |
@@ -29,3 +28,4 @@ Inconsistências encontradas nos documentos e decisões ainda não tomadas. **IA
 ## Resolvidas
 
 - **2026-10-26** — Backend em Java/Spring Boot em vez de Node.js (ADR-0001).
+- **2026-11-04** — Q3: autenticação por token JWT (HS256), stateless, com validade padrão de 8 h.

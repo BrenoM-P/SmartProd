@@ -14,16 +14,35 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 /**
- * API stateless: sem sessão e sem CSRF, pois a autenticação é por token (RF001).
- * O login ({@code POST /api/auth/login}) é público; o resto fora da lista pública responde 401.
- * A leitura do token Bearer nas demais chamadas entra na D1-BE-02.
+ * API stateless: sem sessão e sem CSRF, pois a autenticação é por token JWT (RF001).
+ *
+ * <p>O login ({@code POST /api/auth/login}) e a documentação da API são públicos. Todo o resto exige
+ * um token válido no cabeçalho {@code Authorization: Bearer <token>}: sem token, ou com token inválido,
+ * vencido ou de outro emissor, a resposta é 401. O claim {@code perfil} do token vira a autoridade
+ * {@code ROLE_GERENTE} ou {@code ROLE_FUNCIONARIO} (ver {@code JwtConfig}).
+ *
+ * <p><b>Como proteger um endpoint (todas as duplas):</b> este arquivo não precisa mudar. Anote o método
+ * do controller; com token válido mas perfil sem permissão, a resposta é 403:
+ *
+ * <pre>
+ * &#64;PreAuthorize("hasRole('GERENTE')")                    // só Gerente (custos, dashboard, cadastros)
+ * &#64;PreAuthorize("hasAnyRole('GERENTE', 'FUNCIONARIO')")   // qualquer usuário logado
+ * </pre>
+ *
+ * Método sem anotação exige apenas estar logado. Nos testes com MockMvc, use
+ * {@code @WithMockUser(roles = "GERENTE")} (ou {@code "FUNCIONARIO"}).
  */
 @Configuration
 @EnableMethodSecurity
@@ -32,20 +51,38 @@ public class SecurityConfig {
     /** RNF-S001: BCrypt com no mínimo 10 rounds; o projeto usa 12. */
     static final int BCRYPT_STRENGTH = 12;
 
+    private static final String CAMINHO_DO_LOGIN = "/api/auth/login";
+    private static final BearerTokenResolver RESOLVEDOR_PADRAO = new DefaultBearerTokenResolver();
+
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationConverter conversorDeJwt)
+            throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .bearerTokenResolver(SecurityConfig::resolverToken)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(conversorDeJwt)))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, CAMINHO_DO_LOGIN).permitAll()
                         .anyRequest().authenticated());
         return http.build();
+    }
+
+    /**
+     * No login o cabeçalho Authorization é ignorado: um token antigo ou vencido ainda guardado no
+     * navegador não pode impedir a pessoa de entrar de novo.
+     */
+    static String resolverToken(HttpServletRequest requisicao) {
+        if (CAMINHO_DO_LOGIN.equals(requisicao.getRequestURI())) {
+            return null;
+        }
+        return RESOLVEDOR_PADRAO.resolve(requisicao);
     }
 
     @Bean
