@@ -60,6 +60,8 @@ GET /api/insumos/{id}
 
 Para `FUNCIONARIO` o campo `custoUnitario` **não existe** na resposta.
 
+`GET /api/insumos` devolve só insumos **ativos** (o Gerente pode usar `?incluirInativos=true` e recebe também `ativo`); `GET /api/insumos/{id}` devolve o insumo mesmo se inativo, para fichas antigas. `custoUnitario` aceita até 4 casas decimais (o custo por grama ou ml é muito pequeno) e é o custo de **uma** `unidadeMedida` (`G`, `KG`, `ML`, `L` ou `UN`).
+
 ### Fichas técnicas e cálculo (dupla 2 → dupla 3)
 
 ```
