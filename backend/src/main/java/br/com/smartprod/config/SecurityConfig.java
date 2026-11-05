@@ -21,8 +21,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
- * API stateless: sem sessão e sem CSRF, pois a autenticação será por token (RF001).
- * Enquanto o login não existe, tudo fora da lista pública responde 401.
+ * API stateless: sem sessão e sem CSRF, pois a autenticação é por token (RF001).
+ * O login ({@code POST /api/auth/login}) é público; o resto fora da lista pública responde 401.
+ * A leitura do token Bearer nas demais chamadas entra na D1-BE-02.
  */
 @Configuration
 @EnableMethodSecurity
@@ -42,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .anyRequest().authenticated());
         return http.build();
     }

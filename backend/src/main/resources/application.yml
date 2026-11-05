@@ -14,10 +14,6 @@ spring:
   mvc:
     problemdetails:
       enabled: true
-  autoconfigure:
-    exclude:
-      # Remove a senha aleatória que o Spring imprime no log. Sai quando o RF001 criar o UserDetailsService real.
-      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
 management:
   endpoints:
