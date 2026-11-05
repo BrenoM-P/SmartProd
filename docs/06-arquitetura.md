@@ -63,8 +63,9 @@ Dentro de cada pacote: `XController` (REST) → `XService` (regras) → `XReposi
 
 ## 5. Segurança
 
-- **Autenticação (RF001):** proposta de token JWT no header `Authorization: Bearer …`, pois frontend e backend ficam em domínios diferentes (evita problemas de cookie entre sites). *A confirmar — ver Q3.*
+- **Autenticação (RF001):** token JWT (HS256) no header `Authorization: Bearer …`, pois frontend e backend ficam em domínios diferentes (evita problemas de cookie entre sites). Decidido em 2026-11-04 (Q3). O login é `POST /api/auth/login`; o token leva só o id (`sub`) e o `perfil`, e vale 8 h por padrão (`JWT_VALIDADE_MINUTOS`). O segredo vem de `JWT_SECRET` (mínimo 32 caracteres, sem valor padrão em produção).
 - **Autorização (RNF-S002):** `GERENTE` e `FUNCIONARIO`. Custos de insumos, perdas em R$ e dashboard só para `GERENTE`, com `@PreAuthorize`. DTOs voltados ao Funcionário **não** incluem campos de custo.
+- **Como proteger um endpoint:** sem mexer no `SecurityConfig`, anote o método do controller com `@PreAuthorize("hasRole('GERENTE')")` (só Gerente) ou `@PreAuthorize("hasAnyRole('GERENTE', 'FUNCIONARIO')")` (qualquer usuário logado). Sem token válido a resposta é `401`; com token de perfil sem permissão, `403`. Método sem anotação exige apenas estar logado. Nos testes com MockMvc use `@WithMockUser(roles = "GERENTE")`.
 - **Senhas (RNF-S001):** BCrypt com força 12.
 - **CORS:** origens liberadas por `app.cors.allowed-origins` (env `CORS_ALLOWED_ORIGINS`).
 - **Segredos:** só em variáveis de ambiente; o repositório é público.
