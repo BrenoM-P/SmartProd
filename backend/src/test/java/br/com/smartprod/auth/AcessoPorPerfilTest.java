@@ -9,6 +9,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -40,8 +40,9 @@ import br.com.smartprod.usuario.Usuario;
 import br.com.smartprod.usuario.UsuarioRepository;
 
 /**
- * Autorização por perfil (D1-BE-02): o Spring lê o token Bearer e o {@code @PreAuthorize} decide.
- * Como ainda não há endpoints de negócio, o teste registra um controller só para ele.
+ * Autorização por perfil (D1-BE-02): o Spring lê o token Bearer, confere o usuário no banco e o
+ * {@code @PreAuthorize} decide. Como este teste não depende de endpoints de negócio, ele registra um
+ * controller só dele.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -89,8 +90,7 @@ class AcessoPorPerfilTest {
         JwtProperties outras = new JwtProperties("outro-segredo-com-mais-de-32-caracteres!!", 60);
         TokenService estranho = new TokenService(new JwtConfig().jwtEncoder(outras), outras);
 
-        chamar(LOGADO, estranho.emitir(usuarioComId(Perfil.GERENTE)).valor())
-                .andExpect(status().isUnauthorized());
+        chamar(LOGADO, estranho.emitir(salvar(Perfil.GERENTE)).valor()).andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -98,50 +98,78 @@ class AcessoPorPerfilTest {
         Clock doisDiasAtras = Clock.fixed(Instant.now().minus(Duration.ofDays(2)), ZoneOffset.UTC);
         TokenService antigo = new TokenService(jwtEncoder, jwtProperties, doisDiasAtras);
 
-        chamar(LOGADO, antigo.emitir(usuarioComId(Perfil.GERENTE)).valor())
-                .andExpect(status().isUnauthorized());
+        chamar(LOGADO, antigo.emitir(salvar(Perfil.GERENTE)).valor()).andExpect(status().isUnauthorized());
     }
 
     @Test
     void tokenDeOutroEmissorRetorna401() throws Exception {
-        String token = emitirComClaims("outro-sistema", "GERENTE");
+        Usuario usuario = salvar(Perfil.GERENTE);
 
-        chamar(LOGADO, token).andExpect(status().isUnauthorized());
+        chamar(LOGADO, emitirComClaims("outro-sistema", String.valueOf(usuario.getId())))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void tokenDeUsuarioQueNaoExisteRetorna401() throws Exception {
+        chamar(LOGADO, emitirComClaims(TokenService.EMISSOR, "999999999")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void tokenSemIdNumericoNoSubjectRetorna401() throws Exception {
+        chamar(LOGADO, emitirComClaims(TokenService.EMISSOR, "abc")).andExpect(status().isUnauthorized());
     }
 
     // ---- 200 e 403: o perfil decide
 
     @Test
     void tokenValidoDeGerenteAcessaTudo() throws Exception {
-        String token = tokenService.emitir(usuarioComId(Perfil.GERENTE)).valor();
+        String token = tokenService.emitir(salvar(Perfil.GERENTE)).valor();
 
         chamar(LOGADO, token).andExpect(status().isOk()).andExpect(content().string("ok"));
         chamar(SO_GERENTE, token).andExpect(status().isOk()).andExpect(content().string("ok"));
     }
 
     @Test
-    void funcionarioAcessaRotaDeLoginMasNaoRotaDeGerente() throws Exception {
-        String token = tokenService.emitir(usuarioComId(Perfil.FUNCIONARIO)).valor();
+    void funcionarioAcessaRotaDeLogadoMasNaoRotaDeGerente() throws Exception {
+        String token = tokenService.emitir(salvar(Perfil.FUNCIONARIO)).valor();
 
         chamar(LOGADO, token).andExpect(status().isOk());
         chamar(SO_GERENTE, token).andExpect(status().isForbidden());
     }
 
-    @Test
-    void perfilDesconhecidoNoTokenNaoDaAcessoDeGerente() throws Exception {
-        String token = emitirComClaims(TokenService.EMISSOR, "ADMIN");
+    // ---- o banco manda: mudanças valem na hora, sem esperar o token expirar
 
-        chamar(LOGADO, token).andExpect(status().isOk());
+    @Test
+    void mudancaDePerfilNoBancoValeNaHora() throws Exception {
+        Usuario usuario = salvar(Perfil.GERENTE);
+        String token = tokenService.emitir(usuario).valor();
+        chamar(SO_GERENTE, token).andExpect(status().isOk());
+
+        usuario.atualizar(usuario.getNome(), usuario.getEmail(), Perfil.FUNCIONARIO);
+        usuarioRepository.saveAndFlush(usuario);
+
         chamar(SO_GERENTE, token).andExpect(status().isForbidden());
+        chamar(LOGADO, token).andExpect(status().isOk());
+    }
+
+    @Test
+    void usuarioInativadoPerdeOAcessoNaHoraMesmoComTokenValido() throws Exception {
+        Usuario usuario = salvar(Perfil.FUNCIONARIO);
+        String token = tokenService.emitir(usuario).valor();
+        chamar(LOGADO, token).andExpect(status().isOk());
+
+        usuario.inativar();
+        usuarioRepository.saveAndFlush(usuario);
+
+        chamar(LOGADO, token).andExpect(status().isUnauthorized());
     }
 
     // ---- fluxo completo e detalhes
 
     @Test
     void tokenDoLoginRealFuncionaNasDemaisRotas() throws Exception {
-        usuarioRepository.saveAndFlush(
-                new Usuario("Maria Teste", "maria.teste@padaria.com", passwordEncoder.encode("senha-de-teste-123"),
-                        Perfil.GERENTE));
+        usuarioRepository.saveAndFlush(new Usuario("Maria Teste", "maria.teste@padaria.com",
+                passwordEncoder.encode("senha-de-teste-123"), Perfil.GERENTE));
 
         String resposta = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -155,9 +183,8 @@ class AcessoPorPerfilTest {
 
     @Test
     void loginIgnoraTokenVencidoOuInvalidoNoCabecalho() throws Exception {
-        usuarioRepository.saveAndFlush(
-                new Usuario("Maria Teste", "maria.teste@padaria.com", passwordEncoder.encode("senha-de-teste-123"),
-                        Perfil.GERENTE));
+        usuarioRepository.saveAndFlush(new Usuario("Maria Teste", "maria.teste@padaria.com",
+                passwordEncoder.encode("senha-de-teste-123"), Perfil.GERENTE));
 
         mockMvc.perform(post("/api/auth/login")
                 .header("Authorization", "Bearer token-velho-guardado-no-navegador")
@@ -188,21 +215,20 @@ class AcessoPorPerfilTest {
         return mockMvc.perform(requisicao);
     }
 
-    private static Usuario usuarioComId(Perfil perfil) {
-        Usuario usuario = new Usuario("Teste", "teste@padaria.com", "hash", perfil);
-        ReflectionTestUtils.setField(usuario, "id", 42L);
-        return usuario;
+    private Usuario salvar(Perfil perfil) {
+        return usuarioRepository.saveAndFlush(
+                new Usuario("Teste", UUID.randomUUID() + "@padaria.com", "hash", perfil));
     }
 
-    /** Token válido na assinatura e no prazo, mas com o emissor e o perfil que o teste escolher. */
-    private String emitirComClaims(String emissor, String perfil) {
+    /** Token válido na assinatura e no prazo, mas com o emissor e o subject que o teste escolher. */
+    private String emitirComClaims(String emissor, String subject) {
         Instant agora = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(emissor)
-                .subject("42")
+                .subject(subject)
                 .issuedAt(agora)
                 .expiresAt(agora.plus(Duration.ofHours(1)))
-                .claim(TokenService.CLAIM_PERFIL, perfil)
+                .claim(TokenService.CLAIM_PERFIL, "GERENTE")
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims))
                 .getTokenValue();
