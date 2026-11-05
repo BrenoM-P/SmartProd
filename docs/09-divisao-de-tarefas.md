@@ -1,6 +1,6 @@
 # 09 — Divisão de trabalho (3 duplas)
 
-São 6 pessoas: **3 duplas, cada uma com 1 de backend e 1 de frontend**. Cada dupla é **dona** de um conjunto de pastas e só edita esses arquivos; é isso que evita conflito. As tarefas ficam no Jira (chave `SMART`) e o código chega por fork + Pull Request ([CONTRIBUTING.md](../CONTRIBUTING.md)).
+São 6 pessoas: **3 duplas, cada uma com 1 de backend e 1 de frontend**. Cada dupla é **dona** de um conjunto de pastas e só edita esses arquivos; é isso que evita conflito. As tarefas ficam no Jira (chave `KAN`) e o código chega por fork + Pull Request ([CONTRIBUTING.md](../CONTRIBUTING.md)).
 
 ## Duplas
 

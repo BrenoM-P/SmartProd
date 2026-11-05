@@ -96,6 +96,6 @@ A A3 exige testes no projeto (unitários obrigatórios; integração desejável)
 ## Git
 
 - **Fork + Pull Request:** cada pessoa trabalha no seu fork e abre PR para `Igorzon1/SmartProd` (`main`); ninguém dá push direto no repositório oficial. Passo a passo em [CONTRIBUTING.md](CONTRIBUTING.md).
-- **Jira** (chave provisória `SMART`): uma branch e um PR por card. Branch `SMART-12-login-backend`, commit `SMART-12 feat: login com token JWT`, título do PR `SMART-12 login com token`.
+- **Jira** (chave `KAN`): uma branch e um PR por card. Branch `KAN-5-login-backend`, commit `KAN-5 feat: login com token JWT`, título do PR `KAN-5 login com token`.
 - Commits **descritivos** em pt-BR, no estilo `<chave> tipo: resumo`. Isso é critério de aceitação do projeto.
 - Nunca commite segredos (`.env`, senhas, URLs de banco com credencial) nem dados pessoais da equipe (matrícula, e-mail). O repositório é **público**.

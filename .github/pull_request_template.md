@@ -1,6 +1,6 @@
 ## Tarefa
 
-Card do Jira: SMART-
+Card do Jira: KAN-
 Dupla: 1 / 2 / 3   ·   Parte: backend / frontend
 
 ## O que mudou
