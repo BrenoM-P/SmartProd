@@ -72,6 +72,14 @@ class AuthControllerTest {
     }
 
     @Test
+    void senhaAcimaDoLimiteDoBcryptNoLoginRetorna401() throws Exception {
+        criarUsuario("maria.teste@padaria.com", Perfil.GERENTE, true);
+
+        login("maria.teste@padaria.com", "a".repeat(128)).andExpect(status().isUnauthorized());
+        login("ninguem.teste@padaria.com", "a".repeat(128)).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void funcionarioRecebeOPerfilFuncionario() throws Exception {
         criarUsuario("beto.teste@padaria.com", Perfil.FUNCIONARIO, true);
 

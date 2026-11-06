@@ -39,6 +39,17 @@ class UsuarioRepositoryTest {
     }
 
     @Test
+    void sabeSeJaExisteUsuarioComOPerfil() {
+        repository.deleteAll(); // desfeito no fim do teste, como o resto da transação
+        assertThat(repository.existsByPerfil(Perfil.GERENTE)).isFalse();
+
+        repository.saveAndFlush(new Usuario("Maria", "maria@padaria.com", "hash", Perfil.GERENTE));
+
+        assertThat(repository.existsByPerfil(Perfil.GERENTE)).isTrue();
+        assertThat(repository.existsByPerfil(Perfil.FUNCIONARIO)).isFalse();
+    }
+
+    @Test
     void inativarMantemOUsuarioNoBanco() { // RF002: inativar, nunca remover
         var usuario = repository.saveAndFlush(new Usuario("Beto", "beto@padaria.com", "hash", Perfil.FUNCIONARIO));
 

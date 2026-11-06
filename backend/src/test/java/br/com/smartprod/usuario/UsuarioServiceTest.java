@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +44,7 @@ class UsuarioServiceTest {
     @Test
     void criaComEmailNormalizadoNomeSemEspacosESenhaEmBcrypt() {
         when(repository.existsByEmail("ana@padaria.com")).thenReturn(false);
-        when(repository.save(any(Usuario.class))).thenAnswer(chamada -> chamada.getArgument(0));
+        when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(chamada -> chamada.getArgument(0));
 
         Usuario criado = service.criar(
                 new UsuarioCriacaoRequest("  Ana Souza ", " Ana@Padaria.com ", "senha-forte-1", Perfil.FUNCIONARIO));
@@ -64,7 +65,42 @@ class UsuarioServiceTest {
                 new UsuarioCriacaoRequest("Ana", "ANA@padaria.com", "senha-forte-1", Perfil.FUNCIONARIO)))
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
-        verify(repository, never()).save(any());
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void cadastroSimultaneoBarradoPeloBancoLancaConflito() {
+        when(repository.existsByEmail("ana@padaria.com")).thenReturn(false);
+        when(repository.saveAndFlush(any(Usuario.class)))
+                .thenThrow(new DataIntegrityViolationException("uk_usuarios_email"));
+
+        assertThatThrownBy(() -> service.criar(
+                new UsuarioCriacaoRequest("Ana", "ana@padaria.com", "senha-forte-1", Perfil.FUNCIONARIO)))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+    }
+
+    @Test
+    void senhaAcimaDe72BytesLancaErroDeValidacao() {
+        when(repository.existsByEmail("ana@padaria.com")).thenReturn(false);
+
+        // 40 caracteres passam no @Size, mas cada "ç" ocupa 2 bytes: são 80 bytes.
+        assertThatThrownBy(() -> service.criar(
+                new UsuarioCriacaoRequest("Ana", "ana@padaria.com", "ç".repeat(40), Perfil.FUNCIONARIO)))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+        verify(repository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void senhaDeExatos72BytesEAceita() {
+        when(repository.existsByEmail("ana@padaria.com")).thenReturn(false);
+        when(repository.saveAndFlush(any(Usuario.class))).thenAnswer(chamada -> chamada.getArgument(0));
+
+        Usuario criado = service.criar(
+                new UsuarioCriacaoRequest("Ana", "ana@padaria.com", "ç".repeat(36), Perfil.FUNCIONARIO));
+
+        assertThat(encoder.matches("ç".repeat(36), criado.getSenhaHash())).isTrue();
     }
 
     // ---- consultar
@@ -128,6 +164,44 @@ class UsuarioServiceTest {
                 .isInstanceOfSatisfying(ResponseStatusException.class,
                         erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
         assertThat(existente.getEmail()).isEqualTo("beto@padaria.com");
+    }
+
+    @Test
+    void edicaoSimultaneaBarradaPeloBancoLancaConflito() {
+        Usuario existente = usuario(5L, "beto@padaria.com", Perfil.FUNCIONARIO);
+        when(repository.findById(5L)).thenReturn(Optional.of(existente));
+        when(repository.existsByEmailAndIdNot("ana@padaria.com", 5L)).thenReturn(false);
+        when(repository.saveAndFlush(existente)).thenThrow(new DataIntegrityViolationException("uk_usuarios_email"));
+
+        assertThatThrownBy(() -> service.atualizar(5L,
+                new UsuarioEdicaoRequest("Beto", "ana@padaria.com", Perfil.FUNCIONARIO, null), 1L))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
+    }
+
+    /** O login recusa senha em branco: aceitá-la aqui deixaria o usuário sem conseguir entrar. */
+    @Test
+    void senhaSoDeEspacosNaEdicaoLancaErroDeValidacaoEMantemASenha() {
+        Usuario existente = usuario(5L, "beto@padaria.com", Perfil.FUNCIONARIO);
+        when(repository.findById(5L)).thenReturn(Optional.of(existente));
+
+        assertThatThrownBy(() -> service.atualizar(5L,
+                new UsuarioEdicaoRequest("Beto", "beto@padaria.com", Perfil.FUNCIONARIO, "        "), 1L))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+        assertThat(existente.getSenhaHash()).isEqualTo("hash-antigo");
+    }
+
+    @Test
+    void senhaAcimaDe72BytesNaEdicaoLancaErroDeValidacaoEMantemASenha() {
+        Usuario existente = usuario(5L, "beto@padaria.com", Perfil.FUNCIONARIO);
+        when(repository.findById(5L)).thenReturn(Optional.of(existente));
+
+        assertThatThrownBy(() -> service.atualizar(5L,
+                new UsuarioEdicaoRequest("Beto", "beto@padaria.com", Perfil.FUNCIONARIO, "ç".repeat(40)), 1L))
+                .isInstanceOfSatisfying(ResponseStatusException.class,
+                        erro -> assertThat(erro.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST));
+        assertThat(existente.getSenhaHash()).isEqualTo("hash-antigo");
     }
 
     @Test
