@@ -12,6 +12,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByEmail(String email);
 
+    /** Para a seed: o primeiro Gerente só é criado se ainda não houver nenhum. */
+    boolean existsByPerfil(Perfil perfil);
+
     /** Para a edição: o e-mail pode já ser do próprio usuário, mas não de outro. */
     boolean existsByEmailAndIdNot(String email, Long id);
 

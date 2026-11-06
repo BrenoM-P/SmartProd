@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 public record UsuarioCriacaoRequest(
         @NotBlank @Size(max = 120) String nome,
         @NotBlank @Email @Size(max = 255) String email,
-        @NotBlank @Size(min = 8, max = 128) String senha,
+        @NotBlank @Size(min = 8, max = 72) String senha,
         @NotNull Perfil perfil) {
 
     /** Evita que a senha apareça em log se o objeto for impresso por engano. */

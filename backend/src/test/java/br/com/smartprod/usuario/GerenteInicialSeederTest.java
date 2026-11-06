@@ -7,8 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,8 +24,9 @@ class GerenteInicialSeederTest {
     private final PasswordEncoder encoder = new BCryptPasswordEncoder(4); // força baixa só para o teste ser rápido
 
     @Test
-    void criaGerenteComSenhaEmBcryptQuandoOEmailNaoExiste() {
-        when(repository.findByEmail("gerente@padaria.com")).thenReturn(Optional.empty());
+    void criaGerenteComSenhaEmBcryptQuandoNaoHaNenhumGerente() {
+        when(repository.existsByPerfil(Perfil.GERENTE)).thenReturn(false);
+        when(repository.existsByEmail("gerente@padaria.com")).thenReturn(false);
 
         seeder("Chefe", " Gerente@Padaria.com ", "senha-forte-123").run(null);
 
@@ -42,10 +41,20 @@ class GerenteInicialSeederTest {
         assertThat(encoder.matches("senha-forte-123", criado.getSenhaHash())).isTrue();
     }
 
+    /** O Gerente trocou o e-mail: ao reiniciar, a conta da seed não pode voltar com a senha antiga. */
     @Test
-    void naoRecriaNemSobrescreveQuandoOEmailJaExiste() {
-        when(repository.findByEmail("gerente@padaria.com")).thenReturn(
-                Optional.of(new Usuario("Chefe", "gerente@padaria.com", "hash-antigo", Perfil.GERENTE)));
+    void naoRecriaQuandoJaExisteGerenteMesmoComOutroEmail() {
+        when(repository.existsByPerfil(Perfil.GERENTE)).thenReturn(true);
+
+        seeder("Chefe", "gerente@padaria.com", "senha-forte-123").run(null);
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void naoSobrescreveQuandoOEmailJaEDeOutroUsuario() {
+        when(repository.existsByPerfil(Perfil.GERENTE)).thenReturn(false);
+        when(repository.existsByEmail("gerente@padaria.com")).thenReturn(true);
 
         seeder("Chefe", "gerente@padaria.com", "senha-forte-123").run(null);
 
