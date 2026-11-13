@@ -1,17 +1,54 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Entrar — SmartProd</title>
-  <link rel="stylesheet" href="../../css/base.css">
-</head>
-<body>
-  <main class="container">
-    <h1>Entrar</h1>
-    <p class="aviso">Em construção — dupla 1 (RF001).</p>
-  </main>
-
-  <script type="module" src="main.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Entrar — SmartProd</title>
+    <link rel="stylesheet" href="../../css/base.css" />
+  </head>
+  <body>
+    <main class="login">
+      <section class="login__intro">
+        <strong>◒ SmartProd</strong>
+        <h1>Uma boa produção começa com organização.</h1>
+        <p>Mais cuidado em cada etapa.<br />Mais eficiência em cada fornada.</p>
+      </section>
+      <section class="login__form">
+        <form id="login">
+          <p class="eyebrow">Bem-vindo de volta</p>
+          <h2>Entre na sua conta</h2>
+          <p class="subtitle">Acesse a gestão da sua padaria.</p>
+          <label class="campo"
+            >E-mail<input
+              name="email"
+              type="email"
+              autocomplete="username"
+              required
+              maxlength="255" /></label
+          ><label class="campo"
+            >Senha<input
+              name="senha"
+              id="senha"
+              type="password"
+              autocomplete="current-password"
+              required
+              maxlength="72" /></label
+          ><button
+            type="button"
+            id="mostrar"
+            class="btn btn--secundario"
+            aria-controls="senha"
+            aria-pressed="false"
+          >
+            Mostrar senha
+          </button>
+          <p id="mensagem" class="erro" role="alert"></p>
+          <button id="entrar" class="btn">Entrar →</button>
+          <p class="hint">Seu perfil de acesso é definido pelo gerente.</p>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="main.js"></script>
+  </body>
 </html>
+

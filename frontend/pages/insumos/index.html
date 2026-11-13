@@ -1,18 +1,100 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Insumos — SmartProd</title>
-  <link rel="stylesheet" href="../../css/base.css">
-</head>
-<body>
-  <nav id="menu" class="menu" aria-label="Menu principal"></nav>
-  <main class="container">
-    <h1>Insumos</h1>
-    <p class="aviso">Em construção — dupla 1 (RF004).</p>
-  </main>
-
-  <script type="module" src="main.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Insumos — SmartProd</title>
+    <link rel="stylesheet" href="../../css/base.css" />
+  </head>
+  <body>
+    <nav id="menu" class="menu" aria-label="Menu principal"></nav>
+    <main class="container">
+      <p class="eyebrow">Cadastros · Gestão da padaria</p>
+      <div class="toolbar">
+        <h1>Insumos</h1>
+        <button id="novo" class="btn">+ Novo insumo</button>
+      </div>
+      <p class="subtitle">Os ingredientes de uma produção bem planejada.</p>
+      <p id="mensagem" role="status" aria-live="polite"></p>
+      <section class="card">
+        <div class="toolbar">
+          <input
+            id="busca"
+            type="search"
+            aria-label="Buscar cadastro"
+            placeholder="Buscar por nome"
+          /><select id="status" aria-label="Filtrar situação">
+            <option value="todos">Todos os status</option>
+            <option value="ativos">Ativos</option>
+            <option value="inativos">Inativos</option></select
+          ><button id="recarregar" class="btn btn--secundario">
+            Atualizar
+          </button>
+        </div>
+        <div class="tabela-wrap">
+          <table class="tabela">
+            <caption id="contagem">
+              Carregando cadastros…
+            </caption>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Unidade</th>
+                <th>Custo unitário</th>
+                <th>Situação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="linhas"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <dialog id="editor" aria-labelledby="editor-titulo">
+      <form id="formulario">
+        <h2 id="editor-titulo"></h2>
+        <label class="campo"
+          >Nome<input name="nome" required maxlength="120" /></label
+        ><label class="campo"
+          >Unidade de medida<select name="unidadeMedida">
+            <option value="G">g — grama</option>
+            <option value="KG">kg — quilograma</option>
+            <option value="ML">ml — mililitro</option>
+            <option value="L">L — litro</option>
+            <option value="UN">un — unidade</option>
+          </select></label
+        ><label class="campo"
+          >Custo por unidade (R$)<input
+            name="custoUnitario"
+            type="number"
+            min="0"
+            max="99999999.9999"
+            step="0.0001"
+            required
+          /><small class="hint"
+            >Custo de uma unidade selecionada; até quatro casas decimais.</small
+          ></label
+        >
+        <p id="erro-form" class="erro" role="alert"></p>
+        <div class="acoes">
+          <button id="cancelar" type="button" class="btn btn--secundario">
+            Cancelar</button
+          ><button id="salvar" class="btn">Salvar cadastro</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="confirmacao" aria-labelledby="confirmar-titulo">
+      <h2 id="confirmar-titulo">Inativar cadastro?</h2>
+      <p id="confirmar-texto"></p>
+      <p id="erro-confirmar" class="erro" role="alert"></p>
+      <div class="acoes">
+        <button id="voltar" class="btn btn--secundario">Cancelar</button
+        ><button id="inativar" class="btn btn--perigo">
+          Confirmar inativação
+        </button>
+      </div>
+    </dialog>
+    <script type="module" src="main.js"></script>
+  </body>
 </html>
+
